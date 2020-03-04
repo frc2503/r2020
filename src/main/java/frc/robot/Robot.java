@@ -103,7 +103,7 @@ public class Robot extends TimedRobot {
   private Joystick videogame; //ball & lift control -- button mapping below
   /**buttons & sicks for videogame controller -- SAM!!
   * #1: belts backwards
-  * #6: belts + shooter
+  * #6: shooter fast
   * #7: belts
   * #8: shooter
   * #5 & #3: winch up/down
@@ -119,7 +119,7 @@ public class Robot extends TimedRobot {
   private DigitalInput intakeLimit, beltLimit;
 
   //timers
-  private Timer time, shootTime;
+  private Timer time;
 
   //camera values
   private static final int IMG_WIDTH = 320;
@@ -191,10 +191,6 @@ public class Robot extends TimedRobot {
 
     //timer
     time = new Timer();
-    shootTime = new Timer();
-
-    //start belt & shooter timer -- must be done in init
-    shootTime.start();
 
     //ball camera
     UsbCamera cameraBall = CameraServer.getInstance().startAutomaticCapture(); 
@@ -203,6 +199,7 @@ public class Robot extends TimedRobot {
     //mas con arduino
     //i2c = new I2C(Port.kMXP, 0xA0);
 
+    //LEDs
     lightsTime = new Timer();
     lightsTime.start();
 
@@ -460,7 +457,7 @@ public class Robot extends TimedRobot {
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topSpeed);
       bottomShooter.set(bottomSpeed);
-    //SHOOTER & BALLS: button #6
+    //SHOOTER FAST: button #6
     } else if (shooterFast){
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topFastSpeed);
@@ -483,7 +480,6 @@ public class Robot extends TimedRobot {
     intakeIn.set(ControlMode.PercentOutput, speedIn);
 
     //COLOR WHEEL: button #2
-    //CHANGE SO IT MOVES IN TWO DIRECTIONS WITH VICTOR SPX -- needed or not??
     if (colorWheelRun) {
       colorWheel.set(colorWheelSpeed);
     } else {
@@ -493,12 +489,6 @@ public class Robot extends TimedRobot {
     //INTAKE UP/DOWN: left stick y-axis
     if (liftRun != true){
       intakeMove.set(ControlMode.PercentOutput, videogame.getY());
-      /*if (limitUp.get() == false || limitDown.get() == false) { //once either limit switch has been hit, stop
-        //false == down 
-        //true == not down, or up??
-        intakeMove.set(0);
-        System.out.println("STOP!");
-      }*/
     } else {
       intakeMove.set(0);
     }
