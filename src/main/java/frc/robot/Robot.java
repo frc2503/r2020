@@ -80,7 +80,7 @@ public class Robot extends TimedRobot {
   private WPI_VictorSPX lWinch;
   private WPI_VictorSPX rWinch;
 
-  //intake move motor
+  //intake move up/down motor
   private WPI_VictorSPX intakeMove;
 
   //color wheel motor
@@ -102,8 +102,8 @@ public class Robot extends TimedRobot {
   /** buttons & sicks for videogame controller -- SAM!!
   * #1: belts backwards
   * #6: shooter fast
-  * #8: belts
   * #7: shooter
+  * #8: belts
   * #5 & #3: winch up/down
   * #5 & #3: winch up/down SLOWLY
   * #5 & left stick: lift up/down
@@ -170,7 +170,7 @@ public class Robot extends TimedRobot {
     leftBack.setInverted(true);
     leftFront.setInverted(true);
 
-    //break not coast --> blue = break mode, pink = coast mode
+    //break not coast: B/C LED --> blue = break mode, pink = coast mode
     rightFront.setIdleMode(IdleMode.kBrake);
     rightBack.setIdleMode(IdleMode.kBrake);
     leftBack.setIdleMode(IdleMode.kBrake);
@@ -313,7 +313,7 @@ public class Robot extends TimedRobot {
           topShooter.set(topSpeed);
           bottomShooter.set(bottomSpeed);
           beltUp.set(beltSlow);
-        } else { //done!!
+        } else { //done!
           topShooter.set(0);
           bottomShooter.set(0);
           beltUp.set(0);
@@ -461,8 +461,7 @@ public class Robot extends TimedRobot {
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topFastSpeed);
       bottomShooter.set(bottomFastSpeed);
-    }
-    else {
+    } else {
       topShooter.set(0);
       bottomShooter.set(0);
     }
