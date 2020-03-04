@@ -21,12 +21,9 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 
@@ -38,6 +35,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  * project.
  */
 public class Robot extends TimedRobot {
+  //autonomous
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private static final String kMoveShootAuto = "move then shoot";
@@ -47,7 +45,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  // CAN IDs
+  //CAN IDs
   private static final int leftBackID = 1;
   private static final int leftFrontID = 2;
   private static final int rightBackID = 3;
@@ -61,7 +59,7 @@ public class Robot extends TimedRobot {
   private static final int intakeMoveID = 11;
   private static final int colorWheelID = 12;
 
-  // motor speeds
+  //motor speeds
   private double intakeSpeed = -0.3;
   private double beltSlow = -0.5; // -0.56, -0.45
   private double topSpeed = 0.55;
@@ -72,7 +70,7 @@ public class Robot extends TimedRobot {
   private double winchSpeed = -1;
   private double winchSlow = -0.3;
 
-  // ball motors
+  //ball motors
   private CANSparkMax topShooter;
   private CANSparkMax bottomShooter;
   private WPI_VictorSPX beltUp;
@@ -101,7 +99,7 @@ public class Robot extends TimedRobot {
   private Joystick leftJoy; //left drive control
   private Joystick rightJoy; //right drive control
   private Joystick videogame; //ball & lift control -- button mapping below
-  /**buttons & sicks for videogame controller -- SAM!!
+  /** buttons & sicks for videogame controller -- SAM!!
   * #1: belts backwards
   * #6: shooter fast
   * #8: belts
@@ -120,13 +118,14 @@ public class Robot extends TimedRobot {
 
   //timers
   private Timer time;
+  private Timer lightsTime;
 
   //camera values
   private static final int IMG_WIDTH = 320;
   private static final int IMG_HEIGHT = 240;
 
+  //arduino/LED control
   private SerialPort arduino;
-  private Timer lightsTime;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -134,6 +133,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    //autonomous
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     m_chooser.addOption("move then shoot", kMoveShootAuto);
@@ -196,13 +196,11 @@ public class Robot extends TimedRobot {
     UsbCamera cameraBall = CameraServer.getInstance().startAutomaticCapture(); 
     cameraBall.setResolution(IMG_WIDTH, IMG_HEIGHT);
 
-    //mas con arduino
-    //i2c = new I2C(Port.kMXP, 0xA0);
-
     //LEDs
     lightsTime = new Timer();
     lightsTime.start();
 
+    //arduino USB port
     try {
       arduino = new SerialPort(9600, SerialPort.Port.kUSB);
       System.out.println("Connected to kUSB");
@@ -438,6 +436,7 @@ public class Robot extends TimedRobot {
       beltUp.setInverted(false);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
       arduino.write(new byte[] {0x13}, 1);
+    //BELTS BACKWARDS: button #1
     } else if (beltBackwards) {
       beltUp.setInverted(true);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
