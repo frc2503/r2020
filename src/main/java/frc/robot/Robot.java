@@ -104,8 +104,8 @@ public class Robot extends TimedRobot {
   /**buttons & sicks for videogame controller -- SAM!!
   * #1: belts backwards
   * #6: shooter fast
-  * #7: belts
-  * #8: shooter
+  * #8: belts
+  * #7: shooter
   * #5 & #3: winch up/down
   * #5 & #3: winch up/down SLOWLY
   * #5 & left stick: lift up/down
