@@ -21,12 +21,10 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 
@@ -38,6 +36,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  * project.
  */
 public class Robot extends TimedRobot {
+  //autonomous
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
   private static final String kMoveShootAuto = "move then shoot";
@@ -47,7 +46,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  // CAN IDs
+  //CAN IDs
   private static final int leftBackID = 1;
   private static final int leftFrontID = 2;
   private static final int rightBackID = 3;
@@ -61,18 +60,18 @@ public class Robot extends TimedRobot {
   private static final int intakeMoveID = 11;
   private static final int colorWheelID = 12;
 
-  // motor speeds
+  //motor speeds
   private double intakeSpeed = -0.3;
   private double beltSlow = -0.5; // -0.56, -0.45
-  private double topSpeed = 0.55;
+  private double topSpeed = 0.55; //0.55
   private double bottomSpeed = -0.65;
   private double topFastSpeed = 0.75;
   private double bottomFastSpeed = -0.6;
   private double colorWheelSpeed = 0.25;
   private double winchSpeed = -1;
   private double winchSlow = -0.3;
-
-  // ball motors
+  
+  //ball motors
   private CANSparkMax topShooter;
   private CANSparkMax bottomShooter;
   private WPI_VictorSPX beltUp;
@@ -115,18 +114,26 @@ public class Robot extends TimedRobot {
   */
 
   //limit switches
-  private DigitalInput limitUp, limitDown;
   private DigitalInput intakeLimit, beltLimit;
 
   //timers
   private Timer time;
+  private Timer lightsTime;
 
   //camera values
   private static final int IMG_WIDTH = 320;
   private static final int IMG_HEIGHT = 240;
 
+  //arduino
   private SerialPort arduino;
-  private Timer lightsTime;
+
+  //colors
+  DriverStation ds = DriverStation.getInstance();
+  DriverStation.Alliance alliance;
+  byte[] color;
+  private boolean colorsOn = false;
+
+  private int ballCount = 0;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -134,6 +141,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    //autonomous
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     m_chooser.addOption("move then shoot", kMoveShootAuto);
@@ -155,10 +163,6 @@ public class Robot extends TimedRobot {
     rWinch = new WPI_VictorSPX(rWinchID);
     colorWheel = new WPI_VictorSPX(colorWheelID);
     intakeMove = new WPI_VictorSPX(intakeMoveID);
-
-    //limit switches
-    limitUp = new DigitalInput(1);
-    limitDown = new DigitalInput(0);
 
     //photoelectric sensors
     intakeLimit = new DigitalInput(2);
@@ -196,13 +200,11 @@ public class Robot extends TimedRobot {
     UsbCamera cameraBall = CameraServer.getInstance().startAutomaticCapture(); 
     cameraBall.setResolution(IMG_WIDTH, IMG_HEIGHT);
 
-    //mas con arduino
-    //i2c = new I2C(Port.kMXP, 0xA0);
-
     //LEDs
     lightsTime = new Timer();
     lightsTime.start();
 
+    //arduino USB Port
     try {
       arduino = new SerialPort(9600, SerialPort.Port.kUSB);
       System.out.println("Connected to kUSB");
@@ -224,6 +226,13 @@ public class Robot extends TimedRobot {
       }
     }
 
+    //alliance color
+    alliance = ds.getAlliance();
+    if (alliance == DriverStation.Alliance.Red) {
+      color = new byte[] {0x14};
+    } else {
+      color = new byte[] {0x15};
+    }
   }
 
   /**
@@ -231,12 +240,13 @@ public class Robot extends TimedRobot {
    * @param xVal x value of tape
    */
   public void setMotor(double xVal) {
-    double turnSpeed = 0.4;
+    double turnSpeed = 0.4; //speed
 
     xVal = xVal - 160;
     if (xVal > 0) {
       turnSpeed *= -1;
     }
+
     //right moves froward
     //left moves backward
     if (Math.abs(xVal) < 30) { //deadzone
@@ -265,9 +275,14 @@ public class Robot extends TimedRobot {
       lightsTime.reset();
     }*/
 
+    //never actually prints... why? -- did Brandt add print statements to his??
     if (arduino.getBytesReceived() > 0) {
       System.out.print(arduino.readString());
     }
+
+     /*else {
+      color = new byte[] {0x11};
+    }*/
   }
 
   /**
@@ -289,6 +304,13 @@ public class Robot extends TimedRobot {
 
     //autonomous timer
     time.start();
+
+    //set base LED color
+    if (alliance == DriverStation.Alliance.Red) {
+      color = new byte[] {0x14};
+    } else {
+      color = new byte[] {0x15};
+    }
   }
 
   /**
@@ -297,8 +319,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     //x-position of tape
-    double xPos = NetworkTableInstance.getDefault().getTable("tape").getEntry("tapeTurn").getNumber(0.0).doubleValue();
+    double xPos = NetworkTableInstance.getDefault().getTable("tape").getEntry("tapeTurn").getNumber(160.0).doubleValue();
 
+    //pick auto mode...
     switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
@@ -347,6 +370,7 @@ public class Robot extends TimedRobot {
         break;
 
       case kTargetShootAuto:
+      default:
         //find the target, shoot three balls, move of line
         if (time.get() < 3) { //target
           setMotor(xPos);
@@ -372,7 +396,7 @@ public class Robot extends TimedRobot {
         break;
 
       case kMoveOffLine:
-      default: //move off line is default autonomous 
+      //default: 
         //drive backward off line
         if (time.get() < 5) {
           drive.tankDrive(0.25, 0.25); //absolutely no idea why it's backwards -- the motors have already been inverted in robotInit
@@ -393,15 +417,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if (rightJoy.getRawButton(2)) {
-      System.out.println("Wrote to arduino");
-      arduino.write(new byte[] {0x12}, 1);
-    } else {
-      arduino.write(new byte[] {0x15}, 1);
-    }
+    colorsOn = false;
 
     //x-position of tape
-    double xPos = NetworkTableInstance.getDefault().getTable("tape").getEntry("tapeTurn").getNumber(0.0).doubleValue();
+    double xPos = NetworkTableInstance.getDefault().getTable("tape").getEntry("tapeTurn").getNumber(160.0).doubleValue();
     System.out.println("xPos: " + (xPos-160)); //minus 160 so center is at (0,0)
 
     //motor speeds
@@ -438,18 +457,30 @@ public class Robot extends TimedRobot {
       beltUp.setInverted(false);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
       arduino.write(new byte[] {0x13}, 1);
-    } else if (beltBackwards) {
+      colorsOn = true;
+    } else if (beltBackwards && liftRun != true) {
       beltUp.setInverted(true);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
       arduino.write(new byte[] {0x13}, 1);
-    //new belt system thingy w/limit switches
+      colorsOn = true;
+    //new automatic belt system thingy w/limit switches
     } else if (intakeLimit.get() || beltLimit.get()) {
-      beltUp.setInverted(false);
-      beltUp.set(ControlMode.PercentOutput, beltSlow); 
-      intakeIn.set(ControlMode.PercentOutput, 0.1);
-      arduino.write(new byte[] {0x13}, 1);
+      if (ballCount < 2) {
+        beltUp.setInverted(false);
+        beltUp.set(ControlMode.PercentOutput, -0.1);
+        intakeIn.set(ControlMode.PercentOutput, 0.1); 
+        ballCount ++;
+      } else {
+        beltUp.setInverted(false);
+        beltUp.set(ControlMode.PercentOutput, beltSlow); 
+        intakeIn.set(ControlMode.PercentOutput, 0.1);
+        arduino.write(new byte[] {0x13}, 1);      
+        colorsOn = true;
+        ballCount ++;
+      }
     } else {
       beltUp.set(0);
+      //colorsOn = false;
     }
 
     //SHOOTER: button #7
@@ -457,13 +488,18 @@ public class Robot extends TimedRobot {
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topSpeed);
       bottomShooter.set(bottomSpeed);
+      colorsOn = true;
+      ballCount = 0;
     //SHOOTER FAST: button #6
     } else if (shooterFast){
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topFastSpeed);
       bottomShooter.set(bottomFastSpeed);
+      colorsOn = true;
+      ballCount = 0;
     }
     else {
+      //arduino.write(color, 1);
       topShooter.set(0);
       bottomShooter.set(0);
     }
@@ -509,6 +545,11 @@ public class Robot extends TimedRobot {
       }
     } else {
       rWinch.set(0);
+    }
+
+    //return to base colors
+    if (colorsOn == false) {
+      arduino.write(color, 1);
     }
   }
 
