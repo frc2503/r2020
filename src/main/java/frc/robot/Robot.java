@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
   private WPI_VictorSPX lWinch;
   private WPI_VictorSPX rWinch;
 
-  //intake move motor
+  //intake move up/down motor
   private WPI_VictorSPX intakeMove;
 
   //color wheel motor
