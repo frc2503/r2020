@@ -21,7 +21,10 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
+<<<<<<< HEAD
 import edu.wpi.first.wpilibj.DriverStation;
+=======
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
@@ -70,7 +73,11 @@ public class Robot extends TimedRobot {
   private double colorWheelSpeed = 0.25;
   private double winchSpeed = -1;
   private double winchSlow = -0.3;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
   //ball motors
   private CANSparkMax topShooter;
   private CANSparkMax bottomShooter;
@@ -100,11 +107,11 @@ public class Robot extends TimedRobot {
   private Joystick leftJoy; //left drive control
   private Joystick rightJoy; //right drive control
   private Joystick videogame; //ball & lift control -- button mapping below
-  /**buttons & sicks for videogame controller -- SAM!!
+  /** buttons & sicks for videogame controller -- SAM!!
   * #1: belts backwards
   * #6: shooter fast
-  * #8: belts
   * #7: shooter
+  * #8: belts
   * #5 & #3: winch up/down
   * #5 & #3: winch up/down SLOWLY
   * #5 & left stick: lift up/down
@@ -124,6 +131,7 @@ public class Robot extends TimedRobot {
   private static final int IMG_WIDTH = 320;
   private static final int IMG_HEIGHT = 240;
 
+<<<<<<< HEAD
   //arduino
   private SerialPort arduino;
 
@@ -134,6 +142,10 @@ public class Robot extends TimedRobot {
   private boolean colorsOn = false;
 
   private int ballCount = 0;
+=======
+  //arduino/LED control
+  private SerialPort arduino;
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
 
   /**
    * This function is run when the robot is first started up and should be
@@ -174,7 +186,7 @@ public class Robot extends TimedRobot {
     leftBack.setInverted(true);
     leftFront.setInverted(true);
 
-    //break not coast --> blue = break mode, pink = coast mode
+    //break not coast: B/C LED --> blue = break mode, pink = coast mode
     rightFront.setIdleMode(IdleMode.kBrake);
     rightBack.setIdleMode(IdleMode.kBrake);
     leftBack.setIdleMode(IdleMode.kBrake);
@@ -204,7 +216,11 @@ public class Robot extends TimedRobot {
     lightsTime = new Timer();
     lightsTime.start();
 
+<<<<<<< HEAD
     //arduino USB Port
+=======
+    //arduino USB port
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
     try {
       arduino = new SerialPort(9600, SerialPort.Port.kUSB);
       System.out.println("Connected to kUSB");
@@ -338,7 +354,7 @@ public class Robot extends TimedRobot {
           topShooter.set(topSpeed);
           bottomShooter.set(bottomSpeed);
           beltUp.set(beltSlow);
-        } else { //done!!
+        } else { //done!
           topShooter.set(0);
           bottomShooter.set(0);
           beltUp.set(0);
@@ -457,8 +473,13 @@ public class Robot extends TimedRobot {
       beltUp.setInverted(false);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
       arduino.write(new byte[] {0x13}, 1);
+<<<<<<< HEAD
       colorsOn = true;
     } else if (beltBackwards && liftRun != true) {
+=======
+    //BELTS BACKWARDS: button #1
+    } else if (beltBackwards) {
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
       beltUp.setInverted(true);
       beltUp.set(ControlMode.PercentOutput, beltSlow);
       arduino.write(new byte[] {0x13}, 1);
@@ -495,11 +516,15 @@ public class Robot extends TimedRobot {
       arduino.write(new byte[] {0x12}, 1);
       topShooter.set(topFastSpeed);
       bottomShooter.set(bottomFastSpeed);
+<<<<<<< HEAD
       colorsOn = true;
       ballCount = 0;
     }
     else {
       //arduino.write(color, 1);
+=======
+    } else {
+>>>>>>> cfadcb7ca3703b52d025be707b78070f3ac3a63b
       topShooter.set(0);
       bottomShooter.set(0);
     }
